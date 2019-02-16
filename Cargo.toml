@@ -3,5 +3,8 @@ name = "pathtracer"
 version = "0.1.0"
 authors = ["Bruno Croci <crocidb@gmail.com>"]
 edition = "2018"
+build = "src/build.rs"
 
 [dependencies]
+sdl2 = "0.32.1"
+cgmath = "0.17.0"
