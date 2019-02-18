@@ -27,7 +27,6 @@ pub fn main() {
     canvas.clear();
     canvas.present();
     let mut event_pump = sdl_context.event_pump().unwrap();
-    let mut i = 0;
     'running: loop {
         let mut screen:Option<Vec<u32>> = None;
 
@@ -52,7 +51,7 @@ pub fn main() {
                 for j in 0..width {
                     let pos = (i * width) + j;
                     let col = pixels[pos as usize];
-                    let (r, g, b) = unpack_colors(col);
+                    let (r, g, b) = tracer::unpack_colors(col);
 
                     canvas.set_draw_color(Color::RGB(r, g, b));
                     canvas.draw_point(sdl2::rect::Point::new(j as i32, i as i32));
@@ -66,8 +65,4 @@ pub fn main() {
         canvas.present();
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
     }
-}
-
-fn unpack_colors(col:u32) -> (u8, u8, u8) {
-    (((col >> 16) | 0xFF) as u8, ((col >> 8) | 0xFF) as u8, (col | 0xFF) as u8)
 }
