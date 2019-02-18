@@ -1,11 +1,11 @@
 pub fn trace(width:u32, height:u32) -> Vec<u32> {
     let mut pixel_data = Vec::new();
 
-    for i in 0..height {
-        for j in 0..width {
-            let mut r = i as f32 / height as f32;
-            let mut g = j as f32 / width as f32;
-            let mut b = 1.0;
+    for j in (0..height).rev() {
+        for i in 0..width {
+            let mut r = i as f32 / width as f32;
+            let mut g = j as f32 / height as f32;
+            let mut b = 0.2;
 
             pixel_data.push(pack_colors(
                 (r * 255.0) as u8, 
