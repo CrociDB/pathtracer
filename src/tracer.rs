@@ -1,9 +1,9 @@
-pub fn trace(width:u32, height:u32) -> Vec<i32> {
+pub fn trace(width:u32, height:u32) -> Vec<u32> {
     let mut pixel_data = Vec::new();
 
-    for i in (height - 1)..0 {
+    for i in 0..height {
         for j in 0..width {
-            pixel_data.push(0);
+            pixel_data.push(0xFFFFFF);
         }
     }
 

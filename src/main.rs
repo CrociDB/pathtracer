@@ -23,18 +23,14 @@ pub fn main() {
  
     let mut canvas = window.into_canvas().build().unwrap();
  
-    canvas.set_draw_color(Color::RGB(0, 255, 255));
+    canvas.set_draw_color(Color::RGB(0, 0, 0));
     canvas.clear();
     canvas.present();
     let mut event_pump = sdl_context.event_pump().unwrap();
     let mut i = 0;
     'running: loop {
-        let mut screen:Option<sdl2::surface::Surface> = None;
+        let mut screen:Option<Vec<u32>> = None;
 
-
-        i = (i + 1) % 255;
-        canvas.set_draw_color(Color::RGB(i, 64, 255 - i));
-        canvas.clear();
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit {..} |
@@ -42,14 +38,27 @@ pub fn main() {
                     break 'running
                 },
                 Event::KeyDown { keycode: Some(Keycode::Space), .. } => {
-                    screen = Some(trace(width, height));
+                    screen = Some(tracer::trace(width, height));
                 }
                 _ => {}
             }
         }
         
-        if let Some(surface) = screen {
-            // Blit to screen
+        if let Some(pixels) = screen {
+            canvas.set_draw_color(Color::RGB(0, 0, 0));
+            canvas.clear();
+
+            for i in 0..height {
+                for j in 0..width {
+                    let pos = (i * width) + j;
+                    let col = pixels[pos as usize];
+                    let (r, g, b) = unpack_colors(col);
+
+                    canvas.set_draw_color(Color::RGB(r, g, b));
+                    canvas.draw_point(sdl2::rect::Point::new(j as i32, i as i32));
+                }
+            }
+
             println!("BLITTING!");
             screen = None;
         }
@@ -59,12 +68,6 @@ pub fn main() {
     }
 }
 
-fn trace(width:u32, height:u32) -> sdl2::surface::Surface<'static> {
-    let pixels = tracer::trace(width, height);
-    
-    let masks = sdl2::pixels::PixelFormatEnum::RGBA32.into_masks().unwrap();
-    let surface = sdl2::surface::Surface::from_pixelmasks(width, height, masks).unwrap();
-
-    surface
+fn unpack_colors(col:u32) -> (u8, u8, u8) {
+    (((col >> 16) | 0xFF) as u8, ((col >> 8) | 0xFF) as u8, (col | 0xFF) as u8)
 }
-
