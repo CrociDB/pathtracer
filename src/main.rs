@@ -54,12 +54,14 @@ pub fn main() {
                     let (r, g, b) = tracer::unpack_colors(col);
 
                     canvas.set_draw_color(Color::RGB(r, g, b));
-                    canvas.draw_point(sdl2::rect::Point::new(j as i32, i as i32));
+                    let res = canvas.draw_point(sdl2::rect::Point::new(j as i32, i as i32));
+                    if let Err(_) = res {
+                        panic!("ERROR DRAWING POINT!");
+                    }
                 }
             }
 
             println!("BLITTING!");
-            screen = None;
         }
 
         canvas.present();
