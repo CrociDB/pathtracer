@@ -1,17 +1,11 @@
+pub mod ray;
+pub mod hittable;
+
+use ray::Ray;
+
 use cgmath;
 use cgmath::Vector3;
 use cgmath::prelude::InnerSpace;
-
-struct Ray {
-    origin: Vector3<f32>,
-    direction: Vector3<f32>
-}
-
-impl Ray {
-    pub fn point_at_parameter(&self, p:f32) -> Vector3<f32> {
-        &self.origin + (p * &self.direction)
-    }
-}
 
 fn hit_sphere(center:&Vector3<f32>, radius:f32, ray:&Ray) -> f32 {
     let oc = ray.origin - center;
@@ -77,3 +71,5 @@ pub fn unpack_colors(col:u32) -> (u8, u8, u8) {
 pub fn pack_colors(r:u8, g:u8, b:u8) -> u32 {
     ((r as u32) << 16) + ((g as u32) << 8) + b as u32
 }
+
+
