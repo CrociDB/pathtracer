@@ -19,7 +19,7 @@ use cgmath::prelude::InnerSpace;
 fn color(ray:&Ray, world:&impl Hittable) -> Vector3<f32> {
     let mut record = HitRecord::new();
 
-    if world.hit(ray, 0.0, 10_000.0, &mut record) {
+    if world.hit(ray, 0.0, 10_000_000.0, &mut record) {
         0.5 * cgmath::vec3(record.normal.x + 1.0, record.normal.y + 1.0, record.normal.z + 1.0)
     } else {
         let unit_direction = ray.direction.normalize();
