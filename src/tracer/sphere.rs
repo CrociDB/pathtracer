@@ -1,6 +1,5 @@
 use cgmath;
 use cgmath::Vector3;
-use cgmath::InnerSpace;
 
 use super::hittable::{
     HitRecord,

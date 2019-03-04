@@ -1,6 +1,7 @@
 pub mod ray;
 pub mod hittable;
 pub mod sphere;
+pub mod camera;
 pub mod hittable_list;
 
 use sphere::Sphere;
@@ -9,6 +10,7 @@ use hittable::{
     Hittable
 };
 use ray::Ray;
+use camera::Camera;
 use hittable_list::HittableList;
 
 use cgmath;
@@ -31,25 +33,18 @@ fn color(ray:&Ray, world:&impl Hittable) -> Vector3<f32> {
 pub fn trace(width:u32, height:u32) -> Vec<u32> {
     let mut pixel_data = Vec::new();
 
-    let lower_left = cgmath::vec3(-2.0, -1.0, -1.0);
-    let horizontal = cgmath::vec3(4.0, 0.0, 0.0);
-    let vertical = cgmath::vec3(0.0, 2.0, 0.0);
-    
-    let origin = cgmath::vec3(0.0, 0.0, 0.0);
-
     let mut world = HittableList::new();
     world.add_hittable(Sphere::new(Vector3::new(0.0, 0.0, -1.0), 0.5));
     world.add_hittable(Sphere::new(Vector3::new(0.0, -100.5, -1.0), 100.0));
+
+    let camera = Camera::new();
 
     for j in (0..height).rev() {
         for i in 0..width {
             let u = i as f32 / width as f32;
             let v = j as f32 / height as f32;
 
-            let ray:Ray = Ray {
-                origin: origin,
-                direction: &lower_left + u * &horizontal + v * &vertical
-            };
+            let ray = camera.get_ray(u, v);
 
             let col = color(&ray, &world);
 

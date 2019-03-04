@@ -1,6 +1,3 @@
-use cgmath;
-use cgmath::Vector3;
-
 use super::hittable::{
     HitRecord,
     Hittable
