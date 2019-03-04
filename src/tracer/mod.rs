@@ -17,6 +17,9 @@ use cgmath;
 use cgmath::Vector3;
 use cgmath::prelude::InnerSpace;
 
+extern crate rand;
+use rand::prelude::*;
+
 
 fn color(ray:&Ray, world:&impl Hittable) -> Vector3<f32> {
     let mut record = HitRecord::new();
@@ -32,6 +35,9 @@ fn color(ray:&Ray, world:&impl Hittable) -> Vector3<f32> {
 
 pub fn trace(width:u32, height:u32) -> Vec<u32> {
     let mut pixel_data = Vec::new();
+    let ns = 5;
+
+    let mut rng = rand::thread_rng();
 
     let mut world = HittableList::new();
     world.add_hittable(Sphere::new(Vector3::new(0.0, 0.0, -1.0), 0.5));
@@ -41,12 +47,19 @@ pub fn trace(width:u32, height:u32) -> Vec<u32> {
 
     for j in (0..height).rev() {
         for i in 0..width {
-            let u = i as f32 / width as f32;
-            let v = j as f32 / height as f32;
+            let mut col = cgmath::vec3(0.0, 0.0, 0.0);
+            for _ in 0..ns {
+                let r1:f32 = rng.gen();
+                let r2:f32 = rng.gen();
 
-            let ray = camera.get_ray(u, v);
+                let u = ((i as f32) + r1) / width as f32;
+                let v = ((j as f32) + r2) / height as f32;
+                
+                let ray = camera.get_ray(u, v);
+                col += color(&ray, &world);
+            }
 
-            let col = color(&ray, &world);
+            col /= ns as f32;
 
             pixel_data.push(pack_colors(
                 (col.x * 255.0) as u8, 
