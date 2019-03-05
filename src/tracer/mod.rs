@@ -20,12 +20,28 @@ use cgmath::prelude::InnerSpace;
 extern crate rand;
 use rand::prelude::*;
 
+fn random_in_unit_sphere(rng:&mut ThreadRng) -> cgmath::Vector3<f32> {
+    let mut p:cgmath::Vector3<f32>;
+    
+    loop {
+        p = 2.0 * cgmath::vec3(rng.gen::<f32>(), rng.gen::<f32>(), rng.gen::<f32>()) - cgmath::vec3(1.0, 1.0, 1.0);
 
-fn color(ray:&Ray, world:&impl Hittable) -> Vector3<f32> {
+        if p.magnitude2() >= 1.0 {
+            break;
+        }
+    }
+    
+    p
+}
+
+
+fn color(ray:&Ray, world:&impl Hittable, rng:&mut ThreadRng) -> Vector3<f32> {
     let mut record = HitRecord::new();
 
-    if world.hit(ray, 0.0, 10_000_000.0, &mut record) {
-        0.5 * cgmath::vec3(record.normal.x + 1.0, record.normal.y + 1.0, record.normal.z + 1.0)
+    if world.hit(ray, 0.001, 10_000_000.0, &mut record) {
+        //0.5 * cgmath::vec3(record.normal.x + 1.0, record.normal.y + 1.0, record.normal.z + 1.0)
+        let target = record.p + record.normal + random_in_unit_sphere(rng);
+        0.5 * color(&Ray::new(record.p, target - record.p), world, rng)
     } else {
         let unit_direction = ray.direction.normalize();
         let t:f32 = 0.5 * (unit_direction.y + 1.0);
@@ -56,10 +72,11 @@ pub fn trace(width:u32, height:u32) -> Vec<u32> {
                 let v = ((j as f32) + r2) / height as f32;
                 
                 let ray = camera.get_ray(u, v);
-                col += color(&ray, &world);
+                col += color(&ray, &world, &mut rng);
             }
 
             col /= ns as f32;
+            col = cgmath::vec3(col.x.sqrt(), col.y.sqrt(), col.z.sqrt());
 
             pixel_data.push(pack_colors(
                 (col.x * 255.0) as u8, 
