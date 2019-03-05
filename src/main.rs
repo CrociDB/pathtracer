@@ -1,9 +1,10 @@
 extern crate sdl2; 
 
+use std::time::{Duration, Instant};
+
 use sdl2::pixels::Color;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
-use std::time::Duration;
 
 mod tracer;
 
@@ -29,6 +30,7 @@ pub fn main() {
     let mut event_pump = sdl_context.event_pump().unwrap();
     'running: loop {
         let mut screen:Option<Vec<u32>> = None;
+        let mut time_elapsed = 0;
 
         for event in event_pump.poll_iter() {
             match event {
@@ -37,7 +39,9 @@ pub fn main() {
                     break 'running
                 },
                 Event::KeyDown { keycode: Some(Keycode::Space), .. } => {
+                    let start_time = Instant::now();
                     screen = Some(tracer::trace(width, height));
+                    time_elapsed = start_time.elapsed().as_secs();
                 }
                 _ => {}
             }
@@ -61,7 +65,7 @@ pub fn main() {
                 }
             }
 
-            println!("BLITTING!");
+            println!("Render time: {}", time_elapsed);
         }
 
         canvas.present();
