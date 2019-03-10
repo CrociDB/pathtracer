@@ -22,6 +22,10 @@ pub fn random_in_unit_sphere() -> cgmath::Vector3<f32> {
     p
 }
 
+pub fn reflect(v:&Vector3<f32>, n:&Vector3<f32>) -> Vector3<f32> {
+    v - 2.0 * v.dot(*n) * n
+}
+
 pub trait Material {
     fn scatter(&self, ray:&Ray, hit_record:&HitRecord, attenuation:&mut Vector3<f32>, scattered:&mut Ray) -> bool;
 }

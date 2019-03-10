@@ -1,4 +1,4 @@
-use super::material::{Material, random_in_unit_sphere};
+use super::material::{Material, random_in_unit_sphere, reflect};
 use super::ray::Ray;
 use super::hittable::HitRecord;
 
@@ -17,10 +17,6 @@ impl Metal {
             fuzz: fuzz
         }
     }
-}
-
-fn reflect(v:&Vector3<f32>, n:&Vector3<f32>) -> Vector3<f32> {
-    v - 2.0 * v.dot(*n) * n
 }
 
 impl Material for Metal {
