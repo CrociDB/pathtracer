@@ -8,7 +8,7 @@ use sdl2::keyboard::Keycode;
 
 mod tracer;
 
-static DIMENSIONS:(u32, u32) = (1000, 500);
+static DIMENSIONS:(u32, u32) = (800, 480);
  
 pub fn main() {
     let sdl_context = sdl2::init().unwrap();

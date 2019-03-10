@@ -1,5 +1,6 @@
 use cgmath;
 use cgmath::Vector3;
+use cgmath::prelude::InnerSpace;
 
 use super::ray::Ray;
 
@@ -11,12 +12,20 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new() -> Camera {
+    pub fn new(lookfrom:Vector3<f32>, lookat:Vector3<f32>, up:Vector3<f32>, fov:f32, aspect:f32) -> Camera {
+        let theta = fov * std::f32::consts::PI / 180.0;
+        let half_height = (theta / 2.0).tan();
+        let half_width = aspect * half_height;
+
+        let w = (lookfrom - lookat).normalize();
+        let u = up.cross(w).normalize();
+        let v = w.cross(u);
+
         Camera {
-            lower_left: cgmath::vec3(-2.0, -1.0, -1.0),
-            horizontal: cgmath::vec3(4.0, 0.0, 0.0),
-            vertical: cgmath::vec3(0.0, 2.0, 0.0),
-            origin: cgmath::vec3(0.0, 0.0, 0.0),
+            lower_left: lookfrom - half_width * u - half_height * v - w,
+            horizontal: 2.0 * half_width * u,
+            vertical: 2.0 * half_height * v,
+            origin: lookfrom,
         }
     }
 
