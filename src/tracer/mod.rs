@@ -53,7 +53,7 @@ fn color(ray:&Ray, world:&impl Hittable, depth:i32) -> Vector3<f32> {
 
 pub fn trace(width:u32, height:u32) -> Vec<u32> {
     let mut pixel_data = Vec::new();
-    let ns = 1;
+    let ns = 3;
 
     let mut rng = rand::thread_rng();
 

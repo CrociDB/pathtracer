@@ -7,6 +7,12 @@ use rand::prelude::*;
 use cgmath::Vector3;
 use cgmath::prelude::InnerSpace;
 
+pub trait Material {
+    fn scatter(&self, ray:&Ray, hit_record:&HitRecord, attenuation:&mut Vector3<f32>, scattered:&mut Ray) -> bool;
+}
+
+// Helper functions
+
 pub fn random_in_unit_sphere() -> cgmath::Vector3<f32> {
     let mut p:cgmath::Vector3<f32>;
     let mut rng = rand::thread_rng();
@@ -38,6 +44,8 @@ pub fn refract(v:&Vector3<f32>, n:&Vector3<f32>, ni_over_nt:f32, refracted:&mut 
     }
 }
 
-pub trait Material {
-    fn scatter(&self, ray:&Ray, hit_record:&HitRecord, attenuation:&mut Vector3<f32>, scattered:&mut Ray) -> bool;
+pub fn schlick(cosine:f32, ref_idx:f32) -> f32 {
+    let r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
+    let r0 = r0 * r0;
+    r0 + (1.0 - r0) * (1.0 - cosine).powf(5.0)
 }
