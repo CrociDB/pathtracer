@@ -27,7 +27,7 @@ impl<T> Sphere<T>
 
 impl<T> Hittable for Sphere<T>
     where T : Material {
-    fn hit<'a, 'b>(&'a self, ray:&Ray, t_min:f32, t_max:f32, record:&'b mut HitRecord<'a>) -> bool where 'a: 'b {
+    fn hit<'a, 'b>(&'a self, ray:&Ray, t_min:f32, t_max:f32, record:&'b mut HitRecord<'a>) -> bool{
         let oc = ray.origin - self.center;
         let a = cgmath::dot(ray.direction, ray.direction);
         let b = cgmath::dot(oc, ray.direction);
