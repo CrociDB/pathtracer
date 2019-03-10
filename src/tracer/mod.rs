@@ -7,6 +7,7 @@ pub mod camera;
 pub mod material;
 pub mod metal;
 pub mod lambertian;
+pub mod dielectric;
 
 
 use sphere::Sphere;
@@ -52,14 +53,14 @@ fn color(ray:&Ray, world:&impl Hittable, depth:i32) -> Vector3<f32> {
 
 pub fn trace(width:u32, height:u32) -> Vec<u32> {
     let mut pixel_data = Vec::new();
-    let ns = 5;
+    let ns = 1;
 
     let mut rng = rand::thread_rng();
 
     let mut world = HittableList::new();
     world.add_hittable(Sphere::<lambertian::Lambertian>::new::<lambertian::Lambertian>(Vector3::new(0.0, 0.0, -1.0), 0.5, lambertian::Lambertian::new(Vector3::new(0.4, 0.1, 0.3))));
     world.add_hittable(Sphere::<metal::Metal>::new::<metal::Metal>(Vector3::new(1.0, 0.0, -1.0), 0.5, metal::Metal::new(Vector3::new(0.4, 0.2, 0.6), 0.8)));
-    world.add_hittable(Sphere::<metal::Metal>::new::<metal::Metal>(Vector3::new(-1.0, 0.0, -1.0), 0.5, metal::Metal::new(Vector3::new(0.8, 0.4, 0.6), 0.05)));
+    world.add_hittable(Sphere::<dielectric::Dielectric>::new::<dielectric::Dielectric>(Vector3::new(-1.0, 0.0, -1.0), 0.5, dielectric::Dielectric::new(1.5)));
     world.add_hittable(Sphere::<lambertian::Lambertian>::new::<lambertian::Lambertian>(Vector3::new(0.0, -100.5, -1.0), 100.0, lambertian::Lambertian::new(Vector3::new(0.2, 0.8, 0.4))));
 
     let camera = Camera::new();

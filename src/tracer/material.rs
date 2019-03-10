@@ -26,6 +26,18 @@ pub fn reflect(v:&Vector3<f32>, n:&Vector3<f32>) -> Vector3<f32> {
     v - 2.0 * v.dot(*n) * n
 }
 
+pub fn refract(v:&Vector3<f32>, n:&Vector3<f32>, ni_over_nt:f32, refracted:&mut Vector3<f32>) -> bool {
+    let vnormalized = v.normalize();
+    let dt = vnormalized.dot(*n);
+    let discriminant = 1.0 - ni_over_nt * ni_over_nt * (1.0 - dt * dt);
+    if discriminant > 0.0 {
+        *refracted = ni_over_nt * (vnormalized - n * dt) - n * discriminant.sqrt();
+        true
+    } else {
+        false
+    }
+}
+
 pub trait Material {
     fn scatter(&self, ray:&Ray, hit_record:&HitRecord, attenuation:&mut Vector3<f32>, scattered:&mut Ray) -> bool;
 }
