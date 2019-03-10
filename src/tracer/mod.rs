@@ -1,8 +1,13 @@
 pub mod ray;
 pub mod hittable;
+pub mod hittable_list;
 pub mod sphere;
 pub mod camera;
-pub mod hittable_list;
+
+pub mod material;
+pub mod metal;
+pub mod lambertian;
+
 
 use sphere::Sphere;
 use hittable::{
@@ -20,28 +25,24 @@ use cgmath::prelude::InnerSpace;
 extern crate rand;
 use rand::prelude::*;
 
-fn random_in_unit_sphere(rng:&mut ThreadRng) -> cgmath::Vector3<f32> {
-    let mut p:cgmath::Vector3<f32>;
-    
-    loop {
-        p = 2.0 * cgmath::vec3(rng.gen::<f32>(), rng.gen::<f32>(), rng.gen::<f32>()) - cgmath::vec3(1.0, 1.0, 1.0);
-
-        if p.magnitude2() >= 1.0 {
-            break;
-        }
-    }
-    
-    p
+fn vec_mul(a:&Vector3<f32>, b:&Vector3<f32>) -> Vector3<f32> {
+    cgmath::vec3(a.x * b.x, a.y * b.y, a.z * b.z)
 }
 
 
-fn color(ray:&Ray, world:&impl Hittable, rng:&mut ThreadRng) -> Vector3<f32> {
+fn color(ray:&Ray, world:&impl Hittable, depth:i32) -> Vector3<f32> {
     let mut record = HitRecord::new();
 
     if world.hit(ray, 0.001, 10_000_000.0, &mut record) {
-        //0.5 * cgmath::vec3(record.normal.x + 1.0, record.normal.y + 1.0, record.normal.z + 1.0)
-        let target = record.p + record.normal + random_in_unit_sphere(rng);
-        0.5 * color(&Ray::new(record.p, target - record.p), world, rng)
+        let mut scattered:Ray = Ray::new(cgmath::vec3(0.0, 0.0, 0.0), cgmath::vec3(0.0, 0.0, 0.0));
+        let mut attenuation:Vector3<f32> = cgmath::vec3(0.0, 0.0, 0.0);
+
+        if depth < 50 && record.material.unwrap().scatter(ray, &mut record, &mut attenuation, &mut scattered) {
+            let c = color(&scattered, world, depth + 1);
+            vec_mul(&attenuation, &c)
+        } else {
+            cgmath::vec3(0.0, 0.0, 0.0)
+        }
     } else {
         let unit_direction = ray.direction.normalize();
         let t:f32 = 0.5 * (unit_direction.y + 1.0);
@@ -56,8 +57,8 @@ pub fn trace(width:u32, height:u32) -> Vec<u32> {
     let mut rng = rand::thread_rng();
 
     let mut world = HittableList::new();
-    world.add_hittable(Sphere::new(Vector3::new(0.0, 0.0, -1.0), 0.5));
-    world.add_hittable(Sphere::new(Vector3::new(0.0, -100.5, -1.0), 100.0));
+    world.add_hittable(Sphere::<lambertian::Lambertian>::new::<lambertian::Lambertian>(Vector3::new(0.0, 0.0, -1.0), 0.5, lambertian::Lambertian::new(Vector3::new(1.0, 0.0, 1.0))));
+    world.add_hittable(Sphere::<lambertian::Lambertian>::new::<lambertian::Lambertian>(Vector3::new(0.0, -100.5, -1.0), 100.0, lambertian::Lambertian::new(Vector3::new(1.0, 0.0, 1.0))));
 
     let camera = Camera::new();
 
@@ -72,14 +73,14 @@ pub fn trace(width:u32, height:u32) -> Vec<u32> {
                 let v = ((j as f32) + r2) / height as f32;
                 
                 let ray = camera.get_ray(u, v);
-                col += color(&ray, &world, &mut rng);
+                col += color(&ray, &world, 0);
             }
 
             col /= ns as f32;
             col = cgmath::vec3(col.x.sqrt(), col.y.sqrt(), col.z.sqrt());
 
             pixel_data.push(pack_colors(
-                (col.x * 255.0) as u8, 
+                (col.x * 255.0) as u8,  
                 (col.y * 255.0) as u8, 
                 (col.z * 255.0) as u8));
         }

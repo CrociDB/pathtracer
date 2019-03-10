@@ -23,7 +23,7 @@ impl HittableList {
 }
 
 impl Hittable for HittableList {
-    fn hit(&self, ray:&Ray, t_min:f32, t_max:f32, record:&mut HitRecord) -> bool {
+    fn hit<'a, 'b>(&'a self, ray:&Ray, t_min:f32, t_max:f32, record:&'b mut HitRecord<'a>) -> bool where 'a: 'b {
         let mut temp_rec = HitRecord::new();
         let mut hit_anything = false;
         let mut closest_so_far = t_max;
@@ -32,7 +32,7 @@ impl Hittable for HittableList {
             if h.hit(ray, t_min, closest_so_far, &mut temp_rec) {
                 hit_anything = true;
                 closest_so_far = temp_rec.t;
-                *record = temp_rec.clone();
+                *record = temp_rec;
             }
         }
 

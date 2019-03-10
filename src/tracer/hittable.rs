@@ -2,24 +2,36 @@ use cgmath;
 use cgmath::Vector3;
 
 use super::ray::Ray;
+use super::material::Material;
 
-#[derive(Debug, Clone, Copy)]
-pub struct HitRecord {
+#[derive(Clone, Copy)]
+pub struct HitRecord<'a> {
     pub t: f32,
     pub p: Vector3<f32>,
-    pub normal: Vector3<f32>
+    pub normal: Vector3<f32>,
+    pub material: Option<&'a Material>
 }
 
-impl HitRecord {
-    pub fn new() -> HitRecord {
+impl<'a> HitRecord<'a> {
+    pub fn new() -> HitRecord<'a> {
         HitRecord {
             t: 0.0,
             p: cgmath::vec3(0.0, 0.0, 0.0),
-            normal: cgmath::vec3(0.0, 0.0, 0.0)
+            normal: cgmath::vec3(0.0, 0.0, 0.0),
+            material: None
+        }
+    }
+
+    pub fn update(t:f32, p:Vector3<f32>, normal:Vector3<f32>, material:&'a Material) -> HitRecord<'a> {
+        HitRecord {
+            t: t,
+            p: p,
+            normal: normal,
+            material: Some(material)
         }
     }
 }
 
 pub trait Hittable {
-    fn hit(&self, ray:&Ray, t_min:f32, t_max:f32, record:&mut HitRecord) -> bool;
+    fn hit<'a, 'b>(&'a self, ray:&Ray, t_min:f32, t_max:f32, record:&'b mut HitRecord<'a>) -> bool where 'a: 'b;
 }
