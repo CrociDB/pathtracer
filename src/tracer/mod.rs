@@ -58,8 +58,8 @@ pub fn trace(width:u32, height:u32) -> Vec<u32> {
 
     let mut world = HittableList::new();
     world.add_hittable(Sphere::<lambertian::Lambertian>::new::<lambertian::Lambertian>(Vector3::new(0.0, 0.0, -1.0), 0.5, lambertian::Lambertian::new(Vector3::new(0.4, 0.1, 0.3))));
-    world.add_hittable(Sphere::<metal::Metal>::new::<metal::Metal>(Vector3::new(1.0, 0.0, -1.0), 0.5, metal::Metal::new(Vector3::new(0.4, 0.2, 0.6))));
-    world.add_hittable(Sphere::<metal::Metal>::new::<metal::Metal>(Vector3::new(-1.0, 0.0, -1.0), 0.5, metal::Metal::new(Vector3::new(0.8, 0.8, 0.7))));
+    world.add_hittable(Sphere::<metal::Metal>::new::<metal::Metal>(Vector3::new(1.0, 0.0, -1.0), 0.5, metal::Metal::new(Vector3::new(0.4, 0.2, 0.6), 0.03)));
+    world.add_hittable(Sphere::<metal::Metal>::new::<metal::Metal>(Vector3::new(-1.0, 0.0, -1.0), 0.5, metal::Metal::new(Vector3::new(0.8, 0.8, 0.7), 0.3)));
     world.add_hittable(Sphere::<lambertian::Lambertian>::new::<lambertian::Lambertian>(Vector3::new(0.0, -100.5, -1.0), 100.0, lambertian::Lambertian::new(Vector3::new(0.2, 0.8, 0.4))));
 
     let camera = Camera::new();
