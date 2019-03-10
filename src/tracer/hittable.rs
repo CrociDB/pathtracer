@@ -21,15 +21,6 @@ impl<'a> HitRecord<'a> {
             material: None
         }
     }
-
-    pub fn update(t:f32, p:Vector3<f32>, normal:Vector3<f32>, material:&'a Material) -> HitRecord<'a> {
-        HitRecord {
-            t: t,
-            p: p,
-            normal: normal,
-            material: Some(material)
-        }
-    }
 }
 
 pub trait Hittable {
