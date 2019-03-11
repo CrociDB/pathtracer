@@ -53,20 +53,32 @@ fn color(ray:&Ray, world:&impl Hittable, depth:i32) -> Vector3<f32> {
 
 pub fn trace(width:u32, height:u32) -> Vec<u32> {
     let mut pixel_data = Vec::new();
-    let ns = 20;
+    let ns = 300;
 
     let mut rng = rand::thread_rng();
-
-    let mut world = HittableList::new();
-    world.add_hittable(Sphere::<lambertian::Lambertian>::new::<lambertian::Lambertian>(Vector3::new(0.0, 0.0, -1.0), 0.5, lambertian::Lambertian::new(Vector3::new(0.4, 0.1, 0.3))));
     
-    world.add_hittable(Sphere::<metal::Metal>::new::<metal::Metal>(Vector3::new(1.0, 0.5, -2.6), 1.0, metal::Metal::new(Vector3::new(0.4, 0.2, 0.6), 0.4)));
+    let mut world = HittableList::new();
+    world.add_hittable(Sphere::<lambertian::Lambertian>::new::<lambertian::Lambertian>(Vector3::new(0.4, 0.0, -1.2), 0.5, lambertian::Lambertian::new(Vector3::new(0.4, 0.1, 0.3))));
+    world.add_hittable(Sphere::<lambertian::Lambertian>::new::<lambertian::Lambertian>(Vector3::new(-0.6, -0.1, -1.4), 0.4, lambertian::Lambertian::new(Vector3::new(0.34, 0.245, 0.312))));
+    world.add_hittable(Sphere::<dielectric::Dielectric>::new::<dielectric::Dielectric>(Vector3::new(-2.4, 0.2, -2.4), 0.6, dielectric::Dielectric::new(1.5)));
+    
+    world.add_hittable(Sphere::<metal::Metal>::new::<metal::Metal>(Vector3::new(1.2, 0.5, -2.6), 1.0, metal::Metal::new(Vector3::new(0.4, 0.2, 0.6), 0.55)));
+    world.add_hittable(Sphere::<metal::Metal>::new::<metal::Metal>(Vector3::new(-1.2, 0.5, -4.6), 1.0, metal::Metal::new(Vector3::new(0.5, 0.4, 0.2), 0.04)));
+    world.add_hittable(Sphere::<metal::Metal>::new::<metal::Metal>(Vector3::new(-3.6, 1.0, -8.6), 2.0, metal::Metal::new(Vector3::new(0.67, 0.622, 0.68), 0.04)));
     world.add_hittable(Sphere::<dielectric::Dielectric>::new::<dielectric::Dielectric>(Vector3::new(-1.3, -0.2, -1.0), 0.3, dielectric::Dielectric::new(1.5)));
-    world.add_hittable(Sphere::<dielectric::Dielectric>::new::<dielectric::Dielectric>(Vector3::new(1.3, -0.2, -1.0), 0.3, dielectric::Dielectric::new(1.5)));
+    world.add_hittable(Sphere::<metal::Metal>::new::<metal::Metal>(Vector3::new(1.4, 0.0, -0.7), 0.5, metal::Metal::new(Vector3::new(0.415, 0.62, 0.34), 0.14)));
+    world.add_hittable(Sphere::<dielectric::Dielectric>::new::<dielectric::Dielectric>(Vector3::new(-0.2, -0.3, -0.4), 0.2, dielectric::Dielectric::new(1.5)));
 
-    world.add_hittable(Sphere::<lambertian::Lambertian>::new::<lambertian::Lambertian>(Vector3::new(0.0, -100.5, -1.0), 100.0, lambertian::Lambertian::new(Vector3::new(0.2, 0.8, 0.4))));
+    world.add_hittable(Sphere::<lambertian::Lambertian>::new::<lambertian::Lambertian>(Vector3::new(0.0, -100.5, -1.0), 100.0, lambertian::Lambertian::new(Vector3::new(0.5, 0.5, 0.5))));
 
-    let camera = Camera::new(cgmath::vec3(0.0, 0.5, 1.1), cgmath::vec3(0.0, 0.0, -1.0), cgmath::vec3(0.0, 1.0, 0.0), 60.0, (width as f32) / (height as f32));
+    // Camera settings
+    let lookfrom = cgmath::vec3(0.0, 0.5, 1.3);
+    let lookat = cgmath::vec3(0.0, 0.0, -1.0);
+    let up = cgmath::vec3(0.0, 1.0, 0.0);
+    let apperture = 0.3;
+    let focusdist = (lookfrom - lookat).magnitude();
+
+    let camera = Camera::new(lookfrom, lookat, up, 60.0, (width as f32) / (height as f32), apperture, focusdist);
 
     for j in (0..height).rev() {
         for i in 0..width {
