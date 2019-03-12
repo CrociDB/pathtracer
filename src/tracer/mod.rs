@@ -52,7 +52,8 @@ fn color(ray:&Ray, world:&impl Hittable, depth:i32) -> Vector3<f32> {
 }
 
 pub fn trace(width:u32, height:u32) -> Vec<u32> {
-    let mut pixel_data = Vec::new();
+    let size: usize = width as usize * height as usize;
+    let mut pixel_data = vec![0; size];
     let ns = 1;
 
     let mut rng = rand::thread_rng();
@@ -69,28 +70,29 @@ pub fn trace(width:u32, height:u32) -> Vec<u32> {
 
     let camera = Camera::new(lookfrom, lookat, up, 50.0, (width as f32) / (height as f32), apperture, focusdist);
 
-    for j in (0..height).rev() {
-        for i in 0..width {
-            let mut col = cgmath::vec3(0.0, 0.0, 0.0);
-            for _ in 0..ns {
-                let r1:f32 = rng.gen();
-                let r2:f32 = rng.gen();
+    for i in 0..size {
+        let x = i as u32 % width;
+        let y = height - 1 - (i as u32 / width);
 
-                let u = ((i as f32) + r1) / width as f32;
-                let v = ((j as f32) + r2) / height as f32;
-                
-                let ray = camera.get_ray(u, v);
-                col += color(&ray, &world, 0);
-            }
+        let mut col = cgmath::vec3(0.0, 0.0, 0.0);
+        for _ in 0..ns {
+            let r1:f32 = rng.gen();
+            let r2:f32 = rng.gen();
 
-            col /= ns as f32;
-            col = cgmath::vec3(col.x.sqrt(), col.y.sqrt(), col.z.sqrt());
-
-            pixel_data.push(pack_colors(
-                (col.x * 255.0) as u8,  
-                (col.y * 255.0) as u8, 
-                (col.z * 255.0) as u8));
+            let u = ((x as f32) + r1) / width as f32;
+            let v = ((y as f32) + r2) / height as f32;
+            
+            let ray = camera.get_ray(u, v);
+            col += color(&ray, &world, 0);
         }
+
+        col /= ns as f32;
+        col = cgmath::vec3(col.x.sqrt(), col.y.sqrt(), col.z.sqrt());
+
+        pixel_data[i] = pack_colors(
+            (col.x * 255.0) as u8,  
+            (col.y * 255.0) as u8, 
+            (col.z * 255.0) as u8);
     }
 
     pixel_data
@@ -119,7 +121,7 @@ fn create_random_world() -> HittableList {
     world.add_hittable(Sphere::<lambertian::Lambertian>::new::<lambertian::Lambertian>(Vector3::new(0.0, -1000.0, 0.0), 1000.0, lambertian::Lambertian ::new(Vector3::new(0.5, 0.5, 0.5))));
 
     let mut rng = rand::thread_rng();
-    let n = 7;
+    let n = 2;
 
     for a in -n..n {
         for b in -n..n {
