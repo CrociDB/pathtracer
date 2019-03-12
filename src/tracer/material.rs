@@ -47,5 +47,5 @@ pub fn refract(v:&Vector3<f32>, n:&Vector3<f32>, ni_over_nt:f32, refracted:&mut 
 pub fn schlick(cosine:f32, ref_idx:f32) -> f32 {
     let r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
     let r0 = r0 * r0;
-    r0 + (1.0 - r0) * (1.0 - cosine).powf(5.0)
+    r0 + (1.0 - r0) * (1.0 - cosine).powf(40.0)
 }
