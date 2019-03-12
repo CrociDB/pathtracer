@@ -53,7 +53,7 @@ fn color(ray:&Ray, world:&impl Hittable, depth:i32) -> Vector3<f32> {
 
 pub fn trace(width:u32, height:u32) -> Vec<u32> {
     let mut pixel_data = Vec::new();
-    let ns = 5;
+    let ns = 1;
 
     let mut rng = rand::thread_rng();
     
@@ -123,6 +123,8 @@ fn create_random_world() -> HittableList {
 
     for a in -n..n {
         for b in -n..n {
+            if b > -1 && b < 1 { continue; }
+
             let choose_mat = rng.gen::<f32>();
             let center = cgmath::vec3((a as f32) + 0.7 * rng.gen::<f32>(), 0.2, (b as f32) + 0.7 * rng.gen::<f32>());
             if (center - cgmath::vec3(4.0, 0.2, 0.0)).magnitude() > 0.9 {
