@@ -52,11 +52,8 @@ fn color(ray:&Ray, world:&impl Hittable, depth:i32) -> Vector3<f32> {
 }
 
 pub fn trace(width:u32, height:u32) -> Vec<u32> {
-    let size: usize = width as usize * height as usize;
-    let mut pixel_data = vec![0; size];
-    let ns = 1;
-
-    let mut rng = rand::thread_rng();
+    let size = width * height;
+    let mut pixel_data = vec![0 as u32; size as usize];
     
     // let mut world = create_world();
     let mut world = create_random_world();
@@ -70,9 +67,19 @@ pub fn trace(width:u32, height:u32) -> Vec<u32> {
 
     let camera = Camera::new(lookfrom, lookat, up, 50.0, (width as f32) / (height as f32), apperture, focusdist);
 
-    for i in 0..size {
-        let x = i as u32 % width;
-        let y = height - 1 - (i as u32 / width);
+    trace_slice((width, height), 0, size / 2, &mut pixel_data, &camera, &world);
+    trace_slice((width, height), size / 2 + 1, size, &mut pixel_data, &camera, &world);
+
+    pixel_data
+}
+
+fn trace_slice(dim:(u32, u32), start:u32, end:u32, pixel_data:&mut Vec<u32>, camera:&Camera, world:&impl Hittable) {
+    let ns = 1;
+    let mut rng = rand::thread_rng();
+    let (width, height) = dim;
+    for i in start..end {
+        let x = i % width;
+        let y = height - 1 - (i / width);
 
         let mut col = cgmath::vec3(0.0, 0.0, 0.0);
         for _ in 0..ns {
@@ -83,19 +90,17 @@ pub fn trace(width:u32, height:u32) -> Vec<u32> {
             let v = ((y as f32) + r2) / height as f32;
             
             let ray = camera.get_ray(u, v);
-            col += color(&ray, &world, 0);
+            col += color(&ray, world, 0);
         }
 
         col /= ns as f32;
         col = cgmath::vec3(col.x.sqrt(), col.y.sqrt(), col.z.sqrt());
 
-        pixel_data[i] = pack_colors(
+        pixel_data[i as usize] = pack_colors(
             (col.x * 255.0) as u8,  
             (col.y * 255.0) as u8, 
             (col.z * 255.0) as u8);
     }
-
-    pixel_data
 }
 
 fn create_world() -> HittableList {
