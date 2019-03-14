@@ -7,7 +7,9 @@ use rand::prelude::*;
 use cgmath::Vector3;
 use cgmath::prelude::InnerSpace;
 
-pub trait Material {
+use std::marker::{Sync, Send};
+
+pub trait Material : Sync + Send {
     fn scatter(&self, ray:&Ray, hit_record:&HitRecord, attenuation:&mut Vector3<f32>, scattered:&mut Ray) -> bool;
 }
 

@@ -6,7 +6,7 @@ use super::hittable::{
 use super::ray::Ray;
 
 pub struct HittableList {
-    list: Vec<Box<Hittable + 'static>>
+    list: Vec<Box<Hittable>>
 }
 
 impl HittableList {
@@ -16,9 +16,8 @@ impl HittableList {
         }
     }
 
-    pub fn add_hittable<T>(&mut self, hittable: T)
-        where T: Hittable + 'static {
-        self.list.push(Box::new(hittable));
+    pub fn add_hittable(&mut self, hittable: Box<Hittable>) {
+        self.list.push(hittable);
     }
 }
 

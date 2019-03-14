@@ -4,6 +4,8 @@ use cgmath::Vector3;
 use super::ray::Ray;
 use super::material::Material;
 
+use std::marker::{Sync, Send};
+
 #[derive(Clone, Copy)]
 pub struct HitRecord<'a> {
     pub t: f32,
@@ -23,6 +25,6 @@ impl<'a> HitRecord<'a> {
     }
 }
 
-pub trait Hittable {
+pub trait Hittable : Sync + Send {
     fn hit<'a, 'b>(&'a self, ray:&Ray, t_min:f32, t_max:f32, record:&'b mut HitRecord<'a>) -> bool;
 }
