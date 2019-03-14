@@ -103,7 +103,7 @@ pub fn trace(width:u32, height:u32) -> Vec<u32> {
 
 fn trace_slice(dim:(u32, u32), start:u32, end:u32, camera:&Camera, world:&impl Hittable) -> Vec<u32> {
     let mut pixel_data = Vec::new();
-    let ns = 1;
+    let ns = 100;
     let mut rng = rand::thread_rng();
     let (width, height) = dim;
     for i in start..end {
