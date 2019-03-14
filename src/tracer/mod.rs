@@ -23,6 +23,9 @@ use cgmath;
 use cgmath::Vector3;
 use cgmath::prelude::InnerSpace;
 
+extern crate scoped_threadpool;
+use scoped_threadpool::Pool;
+
 extern crate rand;
 use rand::prelude::*;
 use std::thread;
@@ -48,7 +51,7 @@ fn color(ray:&Ray, world:&impl Hittable, depth:i32) -> Vector3<f32> {
     } else {
         let unit_direction = ray.direction.normalize();
         let t:f32 = 0.5 * (unit_direction.y + 1.0);
-        (1.0 - t) * cgmath::vec3(1.0, 1.0, 1.0) + t * cgmath::vec3(0.5, 0.7, 1.0)
+        (1.0 - t) * cgmath::vec3(1.0, 1.0, 1.0) + t * cgmath::vec3(0.1, 0.7, 1.0)
     }
 }
 
@@ -68,22 +71,31 @@ pub fn trace(width:u32, height:u32) -> Vec<u32> {
 
     let camera = Camera::new(lookfrom, lookat, up, 50.0, (width as f32) / (height as f32), apperture, focusdist);
 
-    let num_threads:usize = 1;
-    let mut threads:Vec<thread::JoinHandle<_>> = Vec::new();
+    let iterations = 12;
+    let mut pool = Pool::new(12);
 
-    let ds = size / num_threads as u32; 
-    let c = || {
-        trace_slice((width, height), 0, ds, &camera, &world)
-    };
+    let ds = size / iterations as u32;
 
-    for t in 0..num_threads {
-        let thread = thread::spawn(c);
-        threads.push(thread);
-    }
+    let mut slices = Vec::new();
+    for i in 0..iterations { slices.push(Vec::new()); }
 
-    for ft in threads {
-        let mut pd = ft.join().unwrap();
-        pixel_data.append(&mut pd);
+    pool.scoped(|scope| {
+        let mut c = 0;
+        let ref_camera = &camera;
+        let ref_world = &world;
+
+        for i in &mut slices {
+            scope.execute(move || {
+                *i = trace_slice((width, height), &c * ds, (&c + 1) * ds, ref_camera, ref_world);
+            });
+            c += 1;
+        }
+    });
+
+    for s in slices {
+        for p in s {
+            pixel_data.push(p);
+        }
     }
 
     pixel_data
@@ -127,18 +139,18 @@ fn trace_slice(dim:(u32, u32), start:u32, end:u32, camera:&Camera, world:&impl H
 
 fn create_world() -> HittableList {
     let mut world = HittableList::new();
-    // world.add_hittable(Sphere::<lambertian::Lambertian>::new::<lambertian::Lambertian>(Vector3::new(0.4, 0.0, -1.2), 0.5, lambertian::Lambertian::new(Vector3::new(0.4, 0.1, 0.3))));
-    // world.add_hittable(Sphere::<lambertian::Lambertian>::new::<lambertian::Lambertian>(Vector3::new(-0.6, -0.1, -1.4), 0.4, lambertian::Lambertian::new(Vector3::new(0.34, 0.245, 0.312))));
-    // world.add_hittable(Sphere::<dielectric::Dielectric>::new::<dielectric::Dielectric>(Vector3::new(-2.4, 0.2, -2.4), 0.6, dielectric::Dielectric::new(1.5)));
+    world.add_hittable(Box::new(Sphere::<lambertian::Lambertian>::new::<lambertian::Lambertian>(Vector3::new(0.4, 0.0, -1.2), 0.5, lambertian::Lambertian::new(Vector3::new(0.4, 0.1, 0.3)))));
+    world.add_hittable(Box::new(Sphere::<lambertian::Lambertian>::new::<lambertian::Lambertian>(Vector3::new(-0.6, -0.1, -1.4), 0.4, lambertian::Lambertian::new(Vector3::new(0.34, 0.245, 0.312)))));
+    world.add_hittable(Box::new(Sphere::<dielectric::Dielectric>::new::<dielectric::Dielectric>(Vector3::new(-2.4, 0.2, -2.4), 0.6, dielectric::Dielectric::new(1.5))));
     
-    // world.add_hittable(Sphere::<metal::Metal>::new::<metal::Metal>(Vector3::new(1.2, 0.5, -2.6), 1.0, metal::Metal::new(Vector3::new(0.4, 0.2, 0.6), 0.55)));
-    // world.add_hittable(Sphere::<metal::Metal>::new::<metal::Metal>(Vector3::new(-1.2, 0.5, -4.6), 1.0, metal::Metal::new(Vector3::new(0.5, 0.4, 0.2), 0.04)));
-    // world.add_hittable(Sphere::<metal::Metal>::new::<metal::Metal>(Vector3::new(-3.6, 1.0, -8.6), 2.0, metal::Metal::new(Vector3::new(0.67, 0.622, 0.68), 0.04)));
-    // world.add_hittable(Sphere::<dielectric::Dielectric>::new::<dielectric::Dielectric>(Vector3::new(-1.3, -0.2, -1.0), 0.3, dielectric::Dielectric::new(1.5)));
-    // world.add_hittable(Sphere::<metal::Metal>::new::<metal::Metal>(Vector3::new(1.4, 0.0, -0.7), 0.5, metal::Metal::new(Vector3::new(0.415, 0.62, 0.34), 0.14)));
-    // world.add_hittable(Sphere::<dielectric::Dielectric>::new::<dielectric::Dielectric>(Vector3::new(-0.2, -0.3, -0.4), 0.2, dielectric::Dielectric::new(1.5)));
+    world.add_hittable(Box::new(Sphere::<metal::Metal>::new::<metal::Metal>(Vector3::new(1.2, 0.5, -2.6), 1.0, metal::Metal::new(Vector3::new(0.4, 0.2, 0.6), 0.55))));
+    world.add_hittable(Box::new(Sphere::<metal::Metal>::new::<metal::Metal>(Vector3::new(-1.2, 0.5, -4.6), 1.0, metal::Metal::new(Vector3::new(0.5, 0.4, 0.2), 0.04))));
+    world.add_hittable(Box::new(Sphere::<metal::Metal>::new::<metal::Metal>(Vector3::new(-3.6, 1.0, -8.6), 2.0, metal::Metal::new(Vector3::new(0.67, 0.622, 0.68), 0.04))));
+    world.add_hittable(Box::new(Sphere::<dielectric::Dielectric>::new::<dielectric::Dielectric>(Vector3::new(-1.3, -0.2, -1.0), 0.3, dielectric::Dielectric::new(1.5))));
+    world.add_hittable(Box::new(Sphere::<metal::Metal>::new::<metal::Metal>(Vector3::new(1.4, 0.0, -0.7), 0.5, metal::Metal::new(Vector3::new(0.415, 0.62, 0.34), 0.14))));
+    world.add_hittable(Box::new(Sphere::<dielectric::Dielectric>::new::<dielectric::Dielectric>(Vector3::new(-0.2, -0.3, -0.4), 0.2, dielectric::Dielectric::new(1.5))));
 
-    // world.add_hittable(Sphere::<lambertian::Lambertian>::new::<lambertian::Lambertian>(Vector3::new(0.0, -100.5, -1.0), 100.0, lambertian::Lambertian::new(Vector3::new(0.5, 0.5, 0.5))));
+    world.add_hittable(Box::new(Sphere::<lambertian::Lambertian>::new::<lambertian::Lambertian>(Vector3::new(0.0, -100.5, -1.0), 100.0, lambertian::Lambertian::new(Vector3::new(0.5, 0.5, 0.5)))));
 
     world
 }
@@ -148,38 +160,38 @@ fn create_random_world() -> HittableList {
     world.add_hittable(Box::new(Sphere::<lambertian::Lambertian>::new::<lambertian::Lambertian>(Vector3::new(0.0, -1000.0, 0.0), 1000.0, lambertian::Lambertian ::new(Vector3::new(0.5, 0.5, 0.5)))));
 
     let mut rng = rand::thread_rng();
-    let n = 2;
+    let n = 6;
 
-    // for a in -n..n {
-    //     for b in -n..n {
-    //         if b > -1 && b < 1 { continue; }
+    for a in -n..n {
+        for b in -n..n {
+            if b > -1 && b < 1 { continue; }
 
-    //         let choose_mat = rng.gen::<f32>();
-    //         let center = cgmath::vec3((a as f32) + 0.7 * rng.gen::<f32>(), 0.2, (b as f32) + 0.7 * rng.gen::<f32>());
-    //         if (center - cgmath::vec3(4.0, 0.2, 0.0)).magnitude() > 0.9 {
-    //             if choose_mat < 0.4 {
-    //                 world.add_hittable(Sphere::<lambertian::Lambertian>::new::<lambertian::Lambertian>(
-    //                         center, 
-    //                         0.2, 
-    //                         lambertian::Lambertian ::new(Vector3::new(rng.gen::<f32>() * rng.gen::<f32>(), rng.gen::<f32>() * rng.gen::<f32>(), rng.gen::<f32>() * rng.gen::<f32>()))));
-    //             } else if choose_mat < 0.85 {
-    //                 world.add_hittable(Sphere::<metal::Metal>::new::<metal::Metal>(
-    //                         center, 
-    //                         0.2, 
-    //                         metal::Metal::new(Vector3::new(rng.gen::<f32>(), 0.5 * (1.0 + rng.gen::<f32>()), 0.5 * (1.0 + rng.gen::<f32>())), 0.5 * rng.gen::<f32>())));
-    //             } else {
-    //                 world.add_hittable(Sphere::<dielectric::Dielectric>::new::<dielectric::Dielectric>(
-    //                         center, 
-    //                         0.2, 
-    //                         dielectric::Dielectric::new(1.5)));
-    //             }
-    //         }
-    //     } 
-    // } 
+            let choose_mat = rng.gen::<f32>();
+            let center = cgmath::vec3((a as f32) + 0.7 * rng.gen::<f32>(), 0.2, (b as f32) + 0.7 * rng.gen::<f32>());
+            if (center - cgmath::vec3(4.0, 0.2, 0.0)).magnitude() > 0.9 {
+                if choose_mat < 0.4 {
+                    world.add_hittable(Box::new(Sphere::<lambertian::Lambertian>::new::<lambertian::Lambertian>(
+                            center, 
+                            0.2, 
+                            lambertian::Lambertian ::new(Vector3::new(rng.gen::<f32>() * rng.gen::<f32>(), rng.gen::<f32>() * rng.gen::<f32>(), rng.gen::<f32>() * rng.gen::<f32>())))));
+                } else if choose_mat < 0.85 {
+                    world.add_hittable(Box::new(Sphere::<metal::Metal>::new::<metal::Metal>(
+                            center, 
+                            0.2, 
+                            metal::Metal::new(Vector3::new(rng.gen::<f32>(), 0.5 * (1.0 + rng.gen::<f32>()), 0.5 * (1.0 + rng.gen::<f32>())), 0.5 * rng.gen::<f32>()))));
+                } else {
+                    world.add_hittable(Box::new(Sphere::<dielectric::Dielectric>::new::<dielectric::Dielectric>(
+                            center, 
+                            0.2, 
+                            dielectric::Dielectric::new(1.5))));
+                }
+            }
+        } 
+    } 
 
-    // world.add_hittable(Sphere::<dielectric::Dielectric>::new::<dielectric::Dielectric>(Vector3::new(0.0, 1.0, 0.0), 1.0, dielectric::Dielectric::new(1.5)));
-    // world.add_hittable(Sphere::<lambertian::Lambertian>::new::<lambertian::Lambertian>(Vector3::new(-4.0, 1.0, 0.0), 1.0, lambertian::Lambertian::new(Vector3::new(0.34, 0.245, 0.312))));
-    // world.add_hittable(Sphere::<metal::Metal>::new::<metal::Metal>(Vector3::new(4.0, 1.0, 0.0), 1.0, metal::Metal::new(Vector3::new(0.4, 0.2, 0.6), 0.05)));
+    world.add_hittable(Box::new(Sphere::<dielectric::Dielectric>::new::<dielectric::Dielectric>(Vector3::new(0.0, 1.0, 0.0), 1.0, dielectric::Dielectric::new(1.5))));
+    world.add_hittable(Box::new(Sphere::<lambertian::Lambertian>::new::<lambertian::Lambertian>(Vector3::new(-4.0, 1.0, 0.0), 1.0, lambertian::Lambertian::new(Vector3::new(0.34, 0.245, 0.312)))));
+    world.add_hittable(Box::new(Sphere::<metal::Metal>::new::<metal::Metal>(Vector3::new(4.0, 1.0, 0.0), 1.0, metal::Metal::new(Vector3::new(0.4, 0.2, 0.6), 0.05))));
 
     world
 }
