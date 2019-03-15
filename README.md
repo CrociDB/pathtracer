@@ -17,8 +17,10 @@ Open `Cargo.toml` and remove `build` property (that's only for Windows).
 Now simply go for:
 
 ``` sh
-$ cargo run
+$ cargo run --release
 ```
+
+*I strongly recommend running it on the release configuration, since it's optimized and runs at least 15x faster.*
 
 ### Windows (MSVC)
 
@@ -27,5 +29,7 @@ Assuming you have `rustc 1.33` or newer already installed, download SDL2 runtime
 Now simply do:
 
 ```
-> cargo run
+> cargo run --release
 ```
+
+*I strongly recommend running it on the release configuration, since it's optimized and runs at least 15x faster.*
