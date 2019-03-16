@@ -30,6 +30,8 @@ extern crate rand;
 use rand::prelude::*;
 use std::thread;
 
+static SAMPLINGS_PER_PIXEL:u32 = 100;
+
 fn vec_mul(a:&Vector3<f32>, b:&Vector3<f32>) -> Vector3<f32> {
     cgmath::vec3(a.x * b.x, a.y * b.y, a.z * b.z)
 }
@@ -103,7 +105,7 @@ pub fn trace(width:u32, height:u32) -> Vec<u32> {
 
 fn trace_slice(dim:(u32, u32), start:u32, end:u32, camera:&Camera, world:&impl Hittable) -> Vec<u32> {
     let mut pixel_data = Vec::new();
-    let ns = 100;
+    let ns = SAMPLINGS_PER_PIXEL;
     let mut rng = rand::thread_rng();
     let (width, height) = dim;
     for i in start..end {

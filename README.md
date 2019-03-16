@@ -33,3 +33,10 @@ Now simply do:
 ```
 
 *I strongly recommend running it on the release configuration, since it's optimized and runs at least 15x faster.*
+
+## Instructions
+
+When a black window open, press `SPACE` and wait sometime for it to render.
+
+You can change how many rays per pixel you want to cast, on `src/tracer/mod.rs` there's a global constant called `SAMPLINGS_PER_PIXEL`, it's set to `100` by default, but you can test how many rays you want.
+
