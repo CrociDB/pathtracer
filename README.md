@@ -40,3 +40,4 @@ When a black window open, press `SPACE` and wait sometime for it to render.
 
 You can change how many rays per pixel you want to cast, on `src/tracer/mod.rs` there's a global constant called `SAMPLINGS_PER_PIXEL`, it's set to `100` by default, but you can test how many rays you want.
 
+*Warning: be careful when running more than **100** rays per pixel, since it may get your computer really slow for a few minutes.*
