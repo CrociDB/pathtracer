@@ -2,6 +2,8 @@ An implementation based on `Ray Tracing in One Weekend` by **Peter Shirley**[1] 
 
 [1] http://www.realtimerendering.com/raytracing/Ray%20Tracing%20in%20a%20Weekend.pdf
 
+![Pathtracer](https://i.imgur.com/a2ws5oV.png)
+
 ## Building
 
 ### Linux (Debian based)
